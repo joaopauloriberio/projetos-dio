@@ -1,0 +1,98 @@
+const readline = require("readline");
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+//  Jogadores
+let jogadores = [
+  { nome: "Mario", posicao: 0, velocidade: 10, item: null },
+  { nome: "Luigi", posicao: 0, velocidade: 9, item: null },
+  { nome: "Peach", posicao: 0, velocidade: 8, item: null }
+];
+
+const DISTANCIA_TOTAL = 100;
+
+// Itens possíveis
+const itens = ["casco", "cogumelo", "banana", null];
+
+//  Funções auxiliares
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function sortearItem() {
+  return itens[random(0, itens.length - 1)];
+}
+
+//  Aplicar item
+function usarItem(jogador) {
+  if (!jogador.item) return;
+
+  console.log(`🧨 ${jogador.nome} usou ${jogador.item}!`);
+
+  if (jogador.item === "cogumelo") {
+    jogador.posicao += 15;
+  }
+
+  if (jogador.item === "casco") {
+    let alvo = jogadores.find(j => j !== jogador);
+    if (alvo) alvo.posicao -= 10;
+  }
+
+  if (jogador.item === "banana") {
+    let alvo = jogadores.find(j => j !== jogador);
+    if (alvo) alvo.posicao -= 5;
+  }
+
+  jogador.item = null;
+}
+
+// 🏁 Turno da corrida
+function turno() {
+  jogadores.forEach(jogador => {
+    let movimento = random(5, jogador.velocidade);
+    jogador.posicao += movimento;
+
+    // chance de pegar item
+    if (Math.random() < 0.3) {
+      jogador.item = sortearItem();
+      if (jogador.item) {
+        console.log(`🎁 ${jogador.nome} pegou ${jogador.item}`);
+      }
+    }
+
+    usarItem(jogador);
+  });
+
+  // ranking
+  jogadores.sort((a, b) => b.posicao - a.posicao);
+
+  console.log("\n📊 Ranking:");
+  jogadores.forEach((j, i) => {
+    console.log(`${i + 1}º ${j.nome} - ${j.posicao}m`);
+  });
+
+  console.log("\n---------------------------\n");
+
+  // verificar vencedor
+  let vencedor = jogadores.find(j => j.posicao >= DISTANCIA_TOTAL);
+  if (vencedor) {
+    console.log(`🏆 ${vencedor.nome} venceu a corrida!`);
+    rl.close();
+  } else {
+    perguntar();
+  }
+}
+
+// 🎮 Entrada do jogador
+function perguntar() {
+  rl.question("Pressione ENTER para próximo turno...", () => {
+    turno();
+  });
+}
+
+// 🚦 Início
+console.log("🏁 Corrida iniciada!\n");
+perguntar();
