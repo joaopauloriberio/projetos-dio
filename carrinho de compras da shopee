@@ -1,0 +1,122 @@
+const readline = require('readline');
+
+// Criando interface de entrada/saída
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+// Carrinho
+let cart = [];
+
+// Funções principais
+function addProduct(name, price, quantity) {
+  const existing = cart.find(p => p.name === name);
+
+  if (existing) {
+    existing.quantity += quantity;
+  } else {
+    cart.push({ name, price, quantity });
+  }
+
+  console.log(`✅ Produto "${name}" adicionado ao carrinho.`);
+}
+
+function removeProduct(name) {
+  cart = cart.filter(p => p.name !== name);
+  console.log(`🗑️ Produto "${name}" removido.`);
+}
+
+function updateQuantity(name, quantity) {
+  const product = cart.find(p => p.name === name);
+
+  if (product) {
+    product.quantity = quantity;
+    console.log(`🔄 Quantidade de "${name}" atualizada.`);
+  } else {
+    console.log("❌ Produto não encontrado.");
+  }
+}
+
+function showCart() {
+  console.log("\n🛒 Seu carrinho:");
+
+  if (cart.length === 0) {
+    console.log("Carrinho vazio.");
+    return;
+  }
+
+  cart.forEach((p, index) => {
+    console.log(
+      `${index + 1}. ${p.name} - R$${p.price} x ${p.quantity} = R$${(p.price * p.quantity).toFixed(2)}`
+    );
+  });
+
+  console.log(`\n💰 Total: R$${getTotal().toFixed(2)}`);
+}
+
+function getTotal() {
+  return cart.reduce((total, p) => total + p.price * p.quantity, 0);
+}
+
+// Menu
+function menu() {
+  console.log(`
+========================
+🛍️  MENU - CARRINHO
+1. Adicionar produto
+2. Remover produto
+3. Atualizar quantidade
+4. Ver carrinho
+5. Sair
+========================
+`);
+
+  rl.question("Escolha uma opção: ", option => {
+    switch (option) {
+      case '1':
+        rl.question("Nome do produto: ", name => {
+          rl.question("Preço: ", price => {
+            rl.question("Quantidade: ", quantity => {
+              addProduct(name, parseFloat(price), parseInt(quantity));
+              menu();
+            });
+          });
+        });
+        break;
+
+      case '2':
+        rl.question("Nome do produto para remover: ", name => {
+          removeProduct(name);
+          menu();
+        });
+        break;
+
+      case '3':
+        rl.question("Nome do produto: ", name => {
+          rl.question("Nova quantidade: ", quantity => {
+            updateQuantity(name, parseInt(quantity));
+            menu();
+          });
+        });
+        break;
+
+      case '4':
+        showCart();
+        menu();
+        break;
+
+      case '5':
+        console.log("👋 Saindo...");
+        rl.close();
+        break;
+
+      default:
+        console.log("❌ Opção inválida.");
+        menu();
+    }
+  });
+}
+
+// Iniciar sistema
+menu();
